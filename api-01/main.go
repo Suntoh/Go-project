@@ -65,6 +65,7 @@ func checkoutBook(c *gin.Context) {
 	}
 
 	book, err := getBookByID(id)
+	// need to use index for else queantity would not be updated
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
 		return
@@ -74,6 +75,21 @@ func checkoutBook(c *gin.Context) {
 		return
 	}
 	book.Quantity -= 1 
+	c.IndentedJSON(http.StatusOK, book)
+}
+
+func returnBook(c *gin.Context) {
+	id, ok := c.GetQuery("id")
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing ID in query"})
+		return
+	}
+	book, err := getBookByID(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		return
+	}
+	book.Quantity += 1
 	c.IndentedJSON(http.StatusOK, book)
 }
 
@@ -88,6 +104,8 @@ func main() {
 	router.POST("/books", createBook)
 	//POST checkout a book
 	router.PATCH("/checkout", checkoutBook)
+
+	router.PATCH("/return",returnBook)
 
 	router.Run("localhost:8080")
 }
